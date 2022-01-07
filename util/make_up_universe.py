@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-BASE_URL = 'https://finance.naver.com/sise/sise_market_sum.naver'
+BASE_URL = 'https://finance.naver.com/sise/sise_market_sum.naver?sosok='
 CODES = [0, 1]
 fields = []
 
@@ -32,3 +32,8 @@ def crawler(code, page):
         res = requests.post('https://finance.naver.com/sise/field_submit.nhn', data=data)
         df = pd.read_html(res.text)[1].drop(columns='토론실').dropna(how='all').set_index('N')
         return df
+
+if __name__ == "__main__":
+        print("Start!")
+        execute_crawler()
+        print("End")
