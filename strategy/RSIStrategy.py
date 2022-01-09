@@ -18,7 +18,7 @@ class RSIStrategy(QThread):
     def init_strategy(self):
         try:
             self.check_and_get_universe()
-            self.check_and_get_price_data()
+            # self.check_and_get_price_data()
             self.kiwoom.get_order()
             self.kiwoom.get_balance()
             self.deposit = self.kiwoom.get_deposit()
@@ -61,7 +61,7 @@ class RSIStrategy(QThread):
         print(self.universe)
 
     def check_and_get_price_data(self):
-        for idx, code enumerate(self.universe.key()):
+        for idx, code in enumerate(self.universe.keys()):
             print("({}/{}) {}".format(idx+1, len(self.universe), code))
 
             if check_transaction_closed() and not check_table_exist(self.strategy_name, code):
