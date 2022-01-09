@@ -18,7 +18,7 @@ class RSIStrategy(QThread):
     def init_strategy(self):
         try:
             self.check_and_get_universe()
-            # self.check_and_get_price_data()
+            self.check_and_get_price_data()
             self.kiwoom.get_order()
             self.kiwoom.get_balance()
             self.deposit = self.kiwoom.get_deposit()
@@ -69,7 +69,7 @@ class RSIStrategy(QThread):
                 insert_df_to_db(self.strategy_name, code, price_df)
             else:
                 if check_transaction_closed():
-                    sql = "select max({}) from {}".format('index', code)
+                    sql = "select max({}) from `{}`".format('index', code)
                     cur = execute_sql(self.strategy_name, sql)
 
                     last_date = cur.fetchone()
@@ -80,7 +80,7 @@ class RSIStrategy(QThread):
                         price_df = self.kiwoom.get_price_data(code)
                         insert_df_to_db(self.strategy_name, code)
                 else:
-                    sql = "select * from {}".format(code)
+                    sql = "select * from `{}`".format(code)
                     cur = execute_sql(self.strategy_name, sql)
                     cols = [column[0] for column in cur.description]
                     price_df = pd.DataFrame.from_records(data=cur.fetchall(), columns=cols)
