@@ -1,9 +1,8 @@
-from api.Kiwoom import *
+from strategy.RSIStrategy import *
 import sys
 
 app = QApplication(sys.argv)
-kiwoom = Kiwoom()
-
+rsi_strategy = RSIStrategy()
 
 # 주식 일봉 데이타 가져와서 출력
 # df = kiwoom.get_price_data("005930")
@@ -25,8 +24,8 @@ kiwoom = Kiwoom()
 # print(order_result)
 
 # 실시간 정보
-fids = get_fid("체결시간")
-codes = '005930;'
-kiwoom.set_real_reg("1000", "", get_fid("장운영구분"), '0')
+# fids = get_fid("체결시간")
+# codes = '005930;'
+# kiwoom.set_real_reg("1000", "", get_fid("장운영구분"), '0')
 
 app.exec_()

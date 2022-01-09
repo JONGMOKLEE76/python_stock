@@ -8,6 +8,21 @@ BASE_URL = 'https://finance.naver.com/sise/sise_market_sum.naver?sosok='
 CODES = [0, 1]
 fields = []
 
+def get_universe():
+        df = execute_crawler()
+
+        cols = ['거래량', '매출액', '매출액증가율', 'ROE', 'PER']
+        df = df[(df['거래량'] > 0) & (df['매출액'] > 0) & (df['매출액증가율'] > 0) & (df['ROE'] > 0) & (df['PER'] > 0) & (~df['종목명'].str.contains("지주")) & (~df['종목명'].str.contains("홀딩스"))]
+        df['1/PER'] = 1 / df['PER']
+        df['RANK_ROE'] = df['ROE'].rank(method='max', ascending=False)
+        df['RANK_1/PER'] = df['1/PER'].rank(method='max', ascending=False)
+        df['RANK_VALUE'] = (df['RANK_ROE'] + df['RANK_1/PER']) / 2
+        df = df.sort_values(by='RANK_VALUE')
+        df.reset_index(inplace=True, drop=True)
+        df = df.loc[:199]
+        df.to_excel('universe.xlsx')
+        return df['종목명'].tolist()
+
 def execute_crawler():
         df_total = []
         for code in CODES:
@@ -24,6 +39,7 @@ def execute_crawler():
 
         df_total = pd.concat(df_total)
         df_total.reset_index(drop=True, inplace=True)
+        df_total.to_excel('NaverFinance.xlsx')
         return df_total
 
 def crawler(code, page):
@@ -35,5 +51,5 @@ def crawler(code, page):
 
 if __name__ == "__main__":
         print("Start!")
-        execute_crawler()
+        get_universe()
         print("End")
