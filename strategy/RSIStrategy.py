@@ -6,6 +6,7 @@ from api.Kiwoom import *
 from util.make_up_universe import *
 from util.db_helper import *
 from util.time_helper import *
+from util.notifier import *
 import math
 import traceback
 
@@ -30,6 +31,7 @@ class RSIStrategy(QThread):
             self.is_init_success = True
         except Exception as e:
             print(traceback.format_exc())
+            send_message(traceback.format_exc(), RSI_STRATEGY_MESSAGE_TOKEN)
 
     def check_and_get_universe(self):
         if not check_table_exist(self.strategy_name, 'universe'):
@@ -248,3 +250,4 @@ class RSIStrategy(QThread):
 
             except Exception as e:
                 print(traceback.format_exc())
+                send_message(traceback.format_exc(), RSI_STRATEGY_MESSAGE_TOKEN)
