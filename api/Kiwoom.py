@@ -90,6 +90,26 @@ class Kiwoom(QAxWidget):
 
             self.tr_data = ohlcv
 
+        elif rqname == 'opt10081_req_2':
+            ohlcv = {'date': [], 'open': [], 'high': [], 'low': [], 'close': [], 'volume': []}
+
+            for i in range(tr_data_cnt):
+                date = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, i, '일자')
+                open = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, i, '시가')
+                high = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, i, '고가')
+                low = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, i, '저가')
+                close = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, i, '현재가')
+                volume = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, i, '거래량')
+
+                ohlcv['date'].append(date.strip())
+                ohlcv['open'].append(int(open))
+                ohlcv['high'].append(int(high))
+                ohlcv['low'].append(int(low))
+                ohlcv['close'].append(int(close))
+                ohlcv['volume'].append(int(volume))
+
+            self.tr_data = ohlcv
+
         elif rqname == 'opw00001_req':
             deposit = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "주문가능금액")
             # print("수익증권증거금현금:", self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "수익증권증거금현금"))
@@ -207,6 +227,15 @@ class Kiwoom(QAxWidget):
 
         df = pd.DataFrame(ohlcv, columns=["open", "high", "low", "close", "volume"], index=ohlcv['date'])
         return df[::-1]
+
+    def get_price_data_2(self, code):
+        self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
+        self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
+        self.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10081_req_2", "opt10081", 0, "0001")
+        self.tr_event_loop.exec_()
+
+        df = pd.DataFrame(self.tr_data, columns=["open", "high", "low", "close", "volume"], index=self.tr_data['date'])
+        return df
 
     def get_deposit(self):
         self.dynamicCall("SetInputValue(QString, QString)", "계좌번호", self.account_number)

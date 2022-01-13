@@ -2,7 +2,9 @@ from strategy.RSIStrategy import *
 import sys
 
 app = QApplication(sys.argv)
+
 rsi_strategy = RSIStrategy()
+rsi_strategy.start()
 
 # 주식 일봉 데이타 가져와서 출력
 # df = kiwoom.get_price_data("005930")
