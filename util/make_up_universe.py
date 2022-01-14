@@ -3,6 +3,9 @@ from bs4 import BeautifulSoup
 import numpy as np
 import pandas as pd
 from datetime import datetime
+import urllib3
+
+urllib3.disable_warnings()
 
 BASE_URL = 'https://finance.naver.com/sise/sise_market_sum.naver?sosok='
 CODES = [0, 1]
@@ -26,7 +29,7 @@ def get_universe():
 def execute_crawler():
         df_total = []
         for code in CODES:
-                res = requests.get(BASE_URL + str(code))
+                res = requests.get(BASE_URL + str(code), verify=False)
                 page_soup = BeautifulSoup(res.text, 'lxml')
                 total_page_num = page_soup.select_one('td.pgRR > a')
                 total_page_num = int(total_page_num.get('href').split('=')[-1])
@@ -45,7 +48,7 @@ def execute_crawler():
 def crawler(code, page):
         global fields
         data = {'menu': 'market_sum', 'fieldIds': fields, 'returnUrl': BASE_URL + str(code) + '&page=' + str(page)}
-        res = requests.post('https://finance.naver.com/sise/field_submit.nhn', data=data)
+        res = requests.post('https://finance.naver.com/sise/field_submit.nhn', data=data, verify=False)
         df = pd.read_html(res.text)[1].drop(columns='토론실').dropna(how='all').set_index('N')
         return df
 

@@ -1,10 +1,15 @@
 from strategy.RSIStrategy import *
 import sys
+from util.notifier import *
 
 app = QApplication(sys.argv)
-
 rsi_strategy = RSIStrategy()
 rsi_strategy.start()
+app.exec_()
+
+
+# rsi_strategy = RSIStrategy()
+# rsi_strategy.start()
 
 # 주식 일봉 데이타 가져와서 출력
 # df = kiwoom.get_price_data("005930")
@@ -30,4 +35,4 @@ rsi_strategy.start()
 # codes = '005930;'
 # kiwoom.set_real_reg("1000", "", get_fid("장운영구분"), '0')
 
-app.exec_()
+

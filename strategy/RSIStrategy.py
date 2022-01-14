@@ -48,11 +48,12 @@ class RSIStrategy(QThread):
 
                 if code_name in universe_list:
                     universe[code] = code_name
-                    universe_df = pd.DataFrame({
-                        'code': universe.keys(),
-                        'code_name': universe.values(),
-                        'created_at': [now] * len(universe.keys())
-                        })
+
+            universe_df = pd.DataFrame({
+                'code': universe.keys(),
+                'code_name': universe.values(),
+                'created_at': [now] * len(universe.keys())
+                })
 
             insert_df_to_db(self.strategy_name, 'universe', universe_df)
 
@@ -188,6 +189,7 @@ class RSIStrategy(QThread):
         price_diff = (close - close_2days_ago) / close_2days_ago * 100
 
         if ma20 > ma60 and rsi < 5 and price_diff < -2:
+            print('일단 매수 조건에 걸림')
             if (self.get_balance_count() + self.get_buy_order_count()) >= 10:
                 return
             budget = self.deposit / (10 - (self.get_balance_count() + self.get_buy_order_count()))
@@ -196,17 +198,20 @@ class RSIStrategy(QThread):
             quantity = math.floor(budget / bid)
 
             if quantity < 1:
+                print('살수 있는 수량이 아님', bid)
                 return
 
             amount = quantity * bid
-            self.deposit = math.floow(self.deposit - amount * 1.00015)
+            self.deposit = math.floor(self.deposit - amount * 1.00015)
 
             if self.deposit < 0:
+                print('예수금 부족함')
                 return
 
             order_result = self.kiwoom.send_order('send_buy_order', '1001', 1, code, quantity, bid, '00')
             self.kiwoom.order[code] = {'주문구분':'매수', '미체결수량':quantity}
         else:
+            print('아직 매수타이밍 아님')
             return
 
     def get_balance_count(self):
@@ -224,6 +229,7 @@ class RSIStrategy(QThread):
         return buy_order_count
 
     def run(self):
+        print(self.kiwoom.balance)
         while self.is_init_success:
             try:
                 if not check_transaction_open():
@@ -246,7 +252,7 @@ class RSIStrategy(QThread):
                         if self.check_sell_signal(code):
                             self.order_sell(code)
                     else:
-                        self.check_buy_signal_and_order()
+                        self.check_buy_signal_and_order(code)
 
             except Exception as e:
                 print(traceback.format_exc())
