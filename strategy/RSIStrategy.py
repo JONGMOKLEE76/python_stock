@@ -229,7 +229,6 @@ class RSIStrategy(QThread):
         return buy_order_count
 
     def run(self):
-        print(self.kiwoom.balance)
         while self.is_init_success:
             try:
                 if not check_transaction_open():

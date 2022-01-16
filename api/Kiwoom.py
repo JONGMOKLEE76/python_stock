@@ -185,8 +185,31 @@ class Kiwoom(QAxWidget):
                 }
             self.tr_data = self.balance
 
+        elif rqname == "opt10001_req":
+            name = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "종목명")
+            accnting_month = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "결산월")
+            capital = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "자본금")
+            listed_qty = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "상장주식")
+            PER = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "PER")
+            EPS = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "EPS")
+            ROE = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "ROE")
+            PBR = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "PBR")
+            sales_amt = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "매출액")
+            sales_income = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "영업이익")
+            net_income = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "당기순이익")
+            price = self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "현재가")
+
+            self.tr_data = [name.strip(), accnting_month.strip(), capital.strip(), listed_qty.strip(), PER.strip(), EPS.strip(), ROE.strip(), PBR.strip(), sales_amt.strip(), sales_income.strip(), net_income.strip(), price.strip().lstrip('+').lstrip('-')]
+
         self.tr_event_loop.exit()
         time.sleep(0.5)
+
+    def get_stock_info(self, code):
+        self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
+        self.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10001_req", "opt10001", "0", "0001")
+        self.tr_event_loop.exec_()
+        return self.tr_data
+
 
     def get_price_data(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
@@ -329,3 +352,6 @@ class Kiwoom(QAxWidget):
                 "(최우선)매수호가":top_priority_bid,
                 "누적거래량":accum_volume
             })
+    def get_stock_qty(self, code):
+        stock_qty = self.dynamicCall("GetMasterListedStockCnt(QString)", code)
+        return stock_qty

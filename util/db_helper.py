@@ -20,3 +20,5 @@ def execute_sql(db_name, sql, param={}):
         cur = con.cursor()
         cur.execute(sql, param)
         return cur
+
+
