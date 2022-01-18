@@ -1,3 +1,4 @@
+import datetime
 import time
 
 import pandas as pd
@@ -36,7 +37,7 @@ class RSIStrategy(QThread):
     def check_and_get_universe(self):
         if not check_table_exist(self.strategy_name, 'universe'):
             universe_list = get_universe()
-            print(universe_list)
+            # print(universe_list)
             universe = {}
             now = datetime.now().strftime("%Y%m%d")
 
@@ -65,7 +66,7 @@ class RSIStrategy(QThread):
             self.universe[code] = {
                 'code_name': code_name
             }
-        print(self.universe)
+        # print(self.universe)
 
     def check_and_get_price_data(self):
         for idx, code in enumerate(self.universe.keys()):
@@ -108,8 +109,8 @@ class RSIStrategy(QThread):
 
     def check_sell_signal(self, code):
         universe_item = self.universe[code]
-        print(universe_item)
-        print(universe_item.keys())
+        # print(universe_item)
+        # print(universe_item.keys())
 
         if code not in self.kiwoom.universe_realtime_transaction_info.keys():
             print("매도대상 확인 과정에서 아직 체결정보가 없습니다.")
@@ -125,7 +126,7 @@ class RSIStrategy(QThread):
 
         df = universe_item['price_df'].copy()
         df.loc[datetime.now().strftime('%Y%m%d')] = today_price_data
-        print(df)
+        # print(df)
 
         period = 2
         date_index = df.index.astype('str')
@@ -140,8 +141,10 @@ class RSIStrategy(QThread):
         rsi = df[-1:]['RSI(2)'].values[0]
 
         if rsi > 80 and close > purchase_price:
+            print('매도 대상임')
             return True
         else:
+            print('RSI:', rsi)
             return False
 
     def order_sell(self, code):
@@ -229,7 +232,6 @@ class RSIStrategy(QThread):
         return buy_order_count
 
     def run(self):
-        print(self.kiwoom.balance)
         while self.is_init_success:
             try:
                 if not check_transaction_open():
@@ -238,7 +240,7 @@ class RSIStrategy(QThread):
                     continue
 
                 for idx, code in enumerate(self.universe.keys()):
-                    print('[{}/{}_{}]'.format(idx+1, len(self.universe), self.universe[code]['code_name']))
+                    print('[{}/{}_{}]'.format(idx+1, len(self.universe), self.universe[code]['code_name']), self.get_balance_count(), self.get_buy_order_count())
                     time.sleep(0.5)
 
                     if code in self.kiwoom.order.keys():

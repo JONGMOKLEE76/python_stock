@@ -1,3 +1,5 @@
+import sqlite3
+
 from strategy.RSIStrategy import *
 import sys
 from util.notifier import *
@@ -5,6 +7,17 @@ from util.notifier import *
 app = QApplication(sys.argv)
 rsi_strategy = RSIStrategy()
 rsi_strategy.start()
+
+# con = sqlite3.connect('RSIStrategy.db')
+# cur = con.cursor()
+#
+# for code in rsi_strategy.universe.keys():
+#     sql = "delete from `{}` where `index` = '20220118'".format(code)
+#     cur.execute(sql)
+#
+# con.commit()
+# cur.close()
+# con.close()
 app.exec_()
 
 

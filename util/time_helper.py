@@ -8,6 +8,7 @@ def check_transaction_open():
 
 def check_transaction_closed():
     now = datetime.now()
+    # start_time = now.replace(hour=9, minute=0, second=0, microsecond=0)
     end_time = now.replace(hour=15, minute=20, second=0, microsecond=0)
     return end_time < now
 
