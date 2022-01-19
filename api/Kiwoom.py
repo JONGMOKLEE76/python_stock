@@ -105,7 +105,7 @@ class Kiwoom(QAxWidget):
             # print("d+2출금가능금액:", self.dynamicCall("GetCommData(QString, QString, int, QString)", trcode, rqname, 0, "d+2출금가능금액"))
 
             self.tr_data = int(deposit)
-            print(self.tr_data)
+            # print(self.tr_data)
 
         elif rqname == "opt10075_req":
             for i in range(tr_data_cnt):
@@ -213,7 +213,7 @@ class Kiwoom(QAxWidget):
 
     def get_price_data(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
-        self.dynamicCall("SetInputValue(QString, QString)", "기준일자", "20220113")
+        # self.dynamicCall("SetInputValue(QString, QString)", "기준일자", "20220113")
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10081_req", "opt10081", 0, "0001")
         self.tr_event_loop.exec_()
@@ -222,7 +222,7 @@ class Kiwoom(QAxWidget):
 
         while self.has_next_tr_data:
             self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
-            self.dynamicCall("SetInputValue(QString, QString)", "기준일자", "20220113")
+            # self.dynamicCall("SetInputValue(QString, QString)", "기준일자", "20220113")
             self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
             self.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10081_req", "opt10081", 2, "0001")
             self.tr_event_loop.exec_()
@@ -236,6 +236,7 @@ class Kiwoom(QAxWidget):
     def get_price_data_2(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
+        # self.dynamicCall("SetInputValue(QString, QString)", "기준일자", "20220118")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10081_req", "opt10081", 0, "0001")
         self.tr_event_loop.exec_()
 

@@ -28,16 +28,16 @@ def make_dart_corpcode_db():
 
     df = pd.DataFrame(record)
 
-    with sqlite3.connect('dart_corpcode.db') as con:  # 데이타베이스 접속을 위한 con 객체 생성
+    with sqlite3.connect('RSIStrategy.db') as con:  # 데이타베이스 접속을 위한 con 객체 생성
         df.to_sql('opendart_company_list', con, if_exists='replace', index=None)  # 데이티프레임을 sqlite로 저장, 만약 해당 table이 이미 저장되어 있으면 덮어쓰기하고, index는 추가하지 않는 옵션)
 
 def conv_stock_code_to_name(code):
-    with sqlite3.connect('dart_corpcode.db') as con:
+    with sqlite3.connect('RSIStrategy.db') as con:
         df = pd.read_sql("SELECT * FROM opendart_company_list", con, index_col = None) # db에서 회사정보를 불러와 데이타프레임으로 만듬
     return df[df['stock_code'] == code].iloc[0, 1]
 
 def conv_stock_code_to_dartcode(code):
-    with sqlite3.connect('dart_corpcode.db') as con:
+    with sqlite3.connect('RSIStrategy.db') as con:
         df = pd.read_sql("SELECT * FROM opendart_company_list", con, index_col = None) # db에서 회사정보를 불러와 데이타프레임으로 만듬
     return df[df['stock_code'] == code].iloc[0, 0]
 
@@ -60,7 +60,4 @@ def get_stock_qty(code, year, reprt_code):
         return pd.Series([corp_name, common_share_qty, self_common_share_qty, distributed_common_share_qty, preferred_share_qty, self_preferred_share_qty, distributed_preferred_share_qty], name = code, index = ['corp_name', 'common_share_qty', 'self_common_share_qty', 'distributed_common_share_qty', 'preferred_share_qty', 'self_preferred_share_qty', 'distributed_preferred_share_qty'])
     else:
         print(res.json()['message'])
-
-if __name__ == '__main__':
-    print(get_stock_qty(conv_stock_code_to_dartcode('005930'), 2021, 11014))
 

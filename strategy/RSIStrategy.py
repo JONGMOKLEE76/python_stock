@@ -193,9 +193,9 @@ class RSIStrategy(QThread):
 
         if ma20 > ma60 and rsi < 5 and price_diff < -2:
             print('일단 매수 조건에 걸림')
-            if (self.get_balance_count() + self.get_buy_order_count()) >= 10:
+            if (self.get_balance_count() + self.get_buy_order_count()) >= 50:
                 return
-            budget = self.deposit / (10 - (self.get_balance_count() + self.get_buy_order_count()))
+            budget = self.deposit / (50 - (self.get_balance_count() + self.get_buy_order_count()))
             bid = self.kiwoom.universe_realtime_transaction_info[code]['(최우선)매수호가']
 
             quantity = math.floor(budget / bid)
@@ -240,7 +240,8 @@ class RSIStrategy(QThread):
                     continue
 
                 for idx, code in enumerate(self.universe.keys()):
-                    print('[{}/{}_{}]'.format(idx+1, len(self.universe), self.universe[code]['code_name']), self.get_balance_count(), self.get_buy_order_count())
+                    print('[{}/{}_{}]'.format(idx+1, len(self.universe), self.universe[code]['code_name']),
+                          '보유종목개수:', self.get_balance_count(), '주문종목개수:', self.get_buy_order_count(), '주문가능금액:', self.deposit)
                     time.sleep(0.5)
 
                     if code in self.kiwoom.order.keys():
@@ -250,7 +251,7 @@ class RSIStrategy(QThread):
                             pass
 
                     elif code in self.kiwoom.balance.keys():
-                        print('보유 종목', self.kiwoom.balance[code])
+                        print('보유 종목임. 수익률은 :', self.kiwoom.balance[code]['수익률']*100, '%')
                         if self.check_sell_signal(code):
                             self.order_sell(code)
                     else:
