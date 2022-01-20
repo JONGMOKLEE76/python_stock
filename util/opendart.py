@@ -34,12 +34,18 @@ def make_dart_corpcode_db():
 def conv_stock_code_to_name(code):
     with sqlite3.connect('RSIStrategy.db') as con:
         df = pd.read_sql("SELECT * FROM opendart_company_list", con, index_col = None) # db에서 회사정보를 불러와 데이타프레임으로 만듬
-    return df[df['stock_code'] == code].iloc[0, 1]
+        if (df['stock_code'] == code).sum() != 0:
+            return df[df['stock_code'] == code].iloc[0, 1]
+        else:
+            return False
 
 def conv_stock_code_to_dartcode(code):
     with sqlite3.connect('RSIStrategy.db') as con:
         df = pd.read_sql("SELECT * FROM opendart_company_list", con, index_col = None) # db에서 회사정보를 불러와 데이타프레임으로 만듬
-    return df[df['stock_code'] == code].iloc[0, 0]
+        if (df['stock_code'] == code).sum() != 0:
+            return df[df['stock_code'] == code].iloc[0, 0]
+        else:
+            return False
 
 # OpenDart에서 회사코드로 주식의 총수를 구해서 Series로 반환하는 함수
 # reprt_code : 1분기보고서 : 11013 반기보고서 : 11012 3분기보고서 : 11014 사업보고서 : 11011
@@ -61,3 +67,67 @@ def get_stock_qty(code, year, reprt_code):
     else:
         print(res.json()['message'])
 
+
+# 함수 작성 중
+def get_company_financial_data(code, year, reprt_code):
+    base_url = 'https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json'
+    params = {'crtfc_key': key, 'corp_code': code, 'bsns_year': year, 'reprt_code': reprt_code, 'fs_div': 'CFS'}
+    res = requests.get('https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json', params=params)
+    if res.json().get('status') == '000':  # 특정 년도에는 보고서가 없을수도 있기 때문에 상태가 '000' 일때만 데이타 추출
+        df = pd.DataFrame.from_dict(res.json().get('list'))
+        df.replace('', 0, inplace=True)
+        df = df.astype({'thstrm_amount': 'int64'})
+        df1 = df[(df['sj_div'] == 'BS') & df['account_nm'].str.contains('자산총계|부채총계|자본금|^자본총계|^지배|^비지배', regex=True)]
+        자산 = df1.loc[df1[df1['account_nm'] == '자산총계'].index[0], 'thstrm_amount']
+        부채 = df1.loc[df1[df1['account_nm'] == '부채총계'].index[0], 'thstrm_amount']
+        자본 = df1.loc[df1[df1['account_nm'] == '자본총계'].index[0], 'thstrm_amount']
+        자본_지배 = df1.loc[df1[df1['account_nm'].str.contains('지배')].index[0], 'thstrm_amount']
+        자본_비지배 = df1.loc[df1[df1['account_nm'].str.contains('비지배')].index[0], 'thstrm_amount']
+        자본금 = df1.loc[df1[df1['account_nm'].str.contains('자본금')].index[0], 'thstrm_amount']
+        if (df['sj_div'] == 'IS').sum() != 0:
+            df2 = df[
+                (df['sj_div'] == 'IS') & df['account_nm'].str.contains('매출액|영업이익|^당기순이익|^분기순이익|^반기순이익|보통주|우선주|^지배|^비지배',
+                                                                       regex=True)]
+            매출 = df2.loc[df2[df2['account_nm'].str.contains('매출액')].index[0], 'thstrm_amount']
+            영업이익 = df2.loc[df2[df2['account_nm'].str.contains('영업이익')].index[0], 'thstrm_amount']
+            순이익 = df2.loc[df2[df2['account_nm'].str.contains('순이익')].index[0], 'thstrm_amount']
+            순이익_지배 = df2.loc[df2[df2['account_nm'].str.contains('지배')].index[0], 'thstrm_amount']
+            순이익_비지배 = df2.loc[df2[df2['account_nm'].str.contains('비지배')].index[0], 'thstrm_amount']
+            주당이익_보통주 = df2[df2['account_nm'].str.contains('보통')]['thstrm_amount'].sum()
+            주당이익_우선주 = df2[df2['account_nm'].str.contains('우선')]['thstrm_amount'].sum()
+            return pd.Series([자산, 부채, 자본, 자본_지배, 자본_비지배, 자본금, 매출, 영업이익, 순이익, 순이익_지배, 순이익_비지배, 주당이익_보통주, 주당이익_우선주],
+                             name=code,
+                             index=['자산', '부채', '자본', '자본_지배', '자본_비지배', '자본금', '매출', '영업이익', '순이익', '순이익_지배',
+                                    '순이익_비지배', '주당이익_보통주', '주당이익_우선주'])
+        else:
+            df2 = df[(df['sj_div'] == 'CIS') & df['account_nm'].str.contains(
+                '매출액|영업이익|^당기순이익|^분기순이익|^반기순이익|보통주|우선주|^지배|^비지배|주당이익', regex=True)]
+            매출 = df2.loc[df2[df2['account_nm'].str.contains('매출액')].index[0], 'thstrm_amount']
+            영업이익 = df2.loc[df2[df2['account_nm'].str.contains('영업이익')].index[0], 'thstrm_amount']
+            순이익 = df2.loc[df2[df2['account_nm'].str.contains('순이익')].index[0], 'thstrm_amount']
+            순이익_지배 = df2.loc[df2[df2['account_nm'].str.contains('지배')].index[0], 'thstrm_amount']
+            순이익_비지배 = df2.loc[df2[df2['account_nm'].str.contains('비지배')].index[0], 'thstrm_amount']
+            주당이익_보통주 = df2[df2['account_nm'].str.contains('기본주당이익')]['thstrm_amount'].sum()
+            주당이익_우선주 = np.nan
+            return pd.Series([자산, 부채, 자본, 자본_지배, 자본_비지배, 자본금, 매출, 영업이익, 순이익, 순이익_지배, 순이익_비지배, 주당이익_보통주, 주당이익_우선주],
+                             name=code,
+                             index=['자산', '부채', '자본', '자본_지배', '자본_비지배', '자본금', '매출', '영업이익', '순이익', '순이익_지배',
+                                    '순이익_비지배', '주당이익_보통주', '주당이익_우선주'])
+    else:
+        print(res.json()['message'])
+        return False
+
+
+def get_company_financial_data_as_df(code, year, reprt_code):
+    base_url = 'https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json'
+    params = {'crtfc_key': key, 'corp_code': code, 'bsns_year': year, 'reprt_code': reprt_code, 'fs_div': 'CFS'}
+    res = requests.get('https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json', params=params)
+    if res.json().get('status') == '000':  # 특정 년도에는 보고서가 없을수도 있기 때문에 상태가 '000' 일때만 데이타 추출
+        df = pd.DataFrame.from_dict(res.json().get('list'))
+        df.replace('', 0, inplace=True)
+        #         df = df.astype({'thstrm_amount':'int64'})
+        df = df[df['sj_div'].isin(['BS', 'IS', 'CIS'])]
+        return df
+    else:
+        print(res.json()['message'])
+        return ''
