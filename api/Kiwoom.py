@@ -236,7 +236,7 @@ class Kiwoom(QAxWidget):
     def get_price_data_2(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
-        # self.dynamicCall("SetInputValue(QString, QString)", "기준일자", "20220118")
+        # self.dynamicCall("SetInputValue(QString, QString)", "기준일자", "20220125")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10081_req", "opt10081", 0, "0001")
         self.tr_event_loop.exec_()
 
@@ -291,10 +291,17 @@ class Kiwoom(QAxWidget):
         self.dynamicCall("SetInputValue(QString, QString)", "전체종목구분", "0")
         self.dynamicCall("SetInputValue(QString, QString)", "체결구분", "0")
         self.dynamicCall("SetInputValue(QString, QString)", "매매구분", "0")
-
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10075_req", "opt10075", 0, "0002")
-
         self.tr_event_loop.exec_()
+
+        while self.has_next_tr_data:
+            self.dynamicCall("SetInputValue(QString, QString)", "계좌번호", self.account_number)
+            self.dynamicCall("SetInputValue(QString, QString)", "전체종목구분", "0")
+            self.dynamicCall("SetInputValue(QString, QString)", "체결구분", "0")
+            self.dynamicCall("SetInputValue(QString, QString)", "매매구분", "0")
+            self.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10075_req", "opt10075", 2, "0002")
+            self.tr_event_loop.exec_()
+
         return self.tr_data
 
     def get_balance(self):
@@ -303,6 +310,14 @@ class Kiwoom(QAxWidget):
         self.dynamicCall("SetInputValue(QString, QString)", "조회구분", "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "opw00018_req", "opw00018", 0, "0002")
         self.tr_event_loop.exec_()
+
+        while self.has_next_tr_data:
+            self.dynamicCall("SetInputValue(QString, QString)", "계좌번호", self.account_number)
+            self.dynamicCall("SetInputValue(QString, QString)", "비밀번호입력매체구분", "00")
+            self.dynamicCall("SetInputValue(QString, QString)", "조회구분", "1")
+            self.dynamicCall("CommRqData(QString, QString, int, QString)", "opw00018_req", "opw00018", 2, "0002")
+            self.tr_event_loop.exec_()
+
         return self.tr_data
 
     def set_real_reg(self, str_screen_no, str_code_list, str_fid_list, str_opt_type):
