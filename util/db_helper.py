@@ -21,4 +21,8 @@ def execute_sql(db_name, sql, param={}):
         cur.execute(sql, param)
         return cur
 
+def delete_record_for_certain_column_value(db_name, table_name, colume_name, value):
+    with sqlite3.connect('{}.db'.format(db_name)) as con:
+        cur = con.cursor()
+        cur.execute("delete from `{}` where `{}` = ?".format(table_name, colume_name), (value,))
 

@@ -4,6 +4,8 @@ from PyQt5.QtCore import *
 import time
 import pandas as pd
 from util.const import *
+from util.db_helper import *
+from tqdm import tqdm
 
 class Kiwoom(QAxWidget):
     def __init__(self):
@@ -201,6 +203,17 @@ class Kiwoom(QAxWidget):
 
             self.tr_data = [name.strip(), accnting_month.strip(), capital.strip(), listed_qty.strip(), PER.strip(), EPS.strip(), ROE.strip(), PBR.strip(), sales_amt.strip(), sales_income.strip(), net_income.strip(), price.strip().lstrip('+').lstrip('-')]
 
+        elif rqname == 'opt10005_req':
+            date = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '날짜')
+            open = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '시가')
+            high = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '고가')
+            low = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '저가')
+            close = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '종가')
+            volume = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '거래량')
+
+            # self.tr_data = [date.strip(), int(open.strip().lstrip('+').lstrip('-')), int(high.strip().lstrip('+').lstrip('-')), int(low.strip().lstrip('+').lstrip('-')), int(close.strip().lstrip('+').lstrip('-')), int(volume)]
+            self.tr_data = [date.strip(), open.strip(), high.strip(), low.strip(), close.strip(), volume.strip()]
+
         self.tr_event_loop.exit()
         time.sleep(0.5)
 
@@ -371,3 +384,29 @@ class Kiwoom(QAxWidget):
     def get_stock_qty(self, code):
         stock_qty = self.dynamicCall("GetMasterListedStockCnt(QString)", code)
         return stock_qty
+
+    def get_today_price_data(self, code):
+        self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
+        self.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10005_req", "opt10005", 0, "0001")
+        self.tr_event_loop.exec_()
+        return self.tr_data
+
+    def update_all_stock_price(self):
+        kospi_list = self.get_code_list_by_market(0)
+        kosdaq_list = self.get_code_list_by_market(10)
+
+        for code in tqdm(kospi_list + kosdaq_list):
+            if check_table_exist('RSIStrategy', code):
+                sql = "select max(`{}`) from `{}`".format('index', code)
+                cur = execute_sql('RSIStrategy', sql)
+                last_date = cur.fetchone()
+                if last_date[0] != '20220127':
+                    data = self.get_today_price_data(code)
+                    if data[0] != '':
+                        sql = "insert into `{}` values (?, ?, ?, ?, ?, ?)".format(code)
+                        execute_sql('RSIStrategy', sql, data)
+                    else:
+                        print('값이 없음', code, data)
+                continue
+            price_df = self.get_price_data(code)
+            insert_df_to_db('RSIStrategy', code, price_df)

@@ -235,8 +235,8 @@ class RSIStrategy(QThread):
         while self.is_init_success:
             try:
                 if not check_transaction_open():
-                    print('장시간이 아니므로 1분간 대기합니다.')
-                    time.sleep(1 * 60)
+                    print('장시간이 아니므로 5분간 대기합니다.')
+                    time.sleep(5 * 60)
                     continue
 
                 for idx, code in enumerate(self.universe.keys()):
