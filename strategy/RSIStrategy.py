@@ -191,11 +191,11 @@ class RSIStrategy(QThread):
         close_2days_ago = df.iloc[idx]['close']
         price_diff = (close - close_2days_ago) / close_2days_ago * 100
 
-        if ma20 > ma60 and rsi < 5 and price_diff < -2:
+        if ma20 > ma60 and rsi < 5 and price_diff < -3:
             print('일단 매수 조건에 걸림')
-            if (self.get_balance_count() + self.get_buy_order_count()) >= 50:
+            if (self.get_balance_count() + self.get_buy_order_count()) >= 30:
                 return
-            budget = self.deposit / (50 - (self.get_balance_count() + self.get_buy_order_count()))
+            budget = self.deposit / (30 - (self.get_balance_count() + self.get_buy_order_count()))
             bid = self.kiwoom.universe_realtime_transaction_info[code]['(최우선)매수호가']
 
             quantity = math.floor(budget / bid)
