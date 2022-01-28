@@ -212,7 +212,7 @@ class Kiwoom(QAxWidget):
             volume = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '거래량')
 
             # self.tr_data = [date.strip(), int(open.strip().lstrip('+').lstrip('-')), int(high.strip().lstrip('+').lstrip('-')), int(low.strip().lstrip('+').lstrip('-')), int(close.strip().lstrip('+').lstrip('-')), int(volume)]
-            self.tr_data = [date.strip(), open.strip(), high.strip(), low.strip(), close.strip(), volume.strip()]
+            self.tr_data = [date.strip(), open.strip().lstrip('+').lstrip('-'), high.strip().lstrip('+').lstrip('-'), low.strip().lstrip('+').lstrip('-'), close.strip().lstrip('+').lstrip('-'), volume.strip().lstrip('+').lstrip('-')]
 
         self.tr_event_loop.exit()
         time.sleep(0.5)
