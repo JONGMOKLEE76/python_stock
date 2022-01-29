@@ -33,11 +33,11 @@ def make_dart_corpcode_db():
 
 def conv_stock_code_to_name(code):
     with sqlite3.connect('RSIStrategy.db') as con:
-        df = pd.read_sql("SELECT * FROM opendart_company_list", con, index_col = None) # db에서 회사정보를 불러와 데이타프레임으로 만듬
-        if (df['stock_code'] == code).sum() != 0:
-            return df[df['stock_code'] == code].iloc[0, 1]
-        else:
-            return False
+        cur = con.cursor()
+        sql = "SELECT corp_name FROM opendart_company_list where stock_code = ?"
+        cur.execute(sql, (code,))
+        name = cur.fetchone()
+        return name[0]
 
 def conv_stock_code_to_dartcode(code):
     with sqlite3.connect('RSIStrategy.db') as con:

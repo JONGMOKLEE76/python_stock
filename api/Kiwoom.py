@@ -391,16 +391,16 @@ class Kiwoom(QAxWidget):
         self.tr_event_loop.exec_()
         return self.tr_data
 
-    def update_all_stock_price(self):
+    def update_all_stock_price(self, date):
         kospi_list = self.get_code_list_by_market(0)
         kosdaq_list = self.get_code_list_by_market(10)
 
         for code in tqdm(kospi_list + kosdaq_list):
             if check_table_exist('RSIStrategy', code):
-                sql = "select max(`{}`) from `{}`".format('index', code)
+                sql = "select max(`index`) from `{}`".format(code)
                 cur = execute_sql('RSIStrategy', sql)
                 last_date = cur.fetchone()
-                if last_date[0] != '20220127':
+                if last_date[0] != date:
                     data = self.get_today_price_data(code)
                     if data[0] != '':
                         sql = "insert into `{}` values (?, ?, ?, ?, ?, ?)".format(code)

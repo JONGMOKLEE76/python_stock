@@ -36,22 +36,28 @@ def get_all_stock_fall_rate_for_certain_period(start_date, end_date):
             dic['max_price'].append(max_price)
             dic['cur_price'].append(current_price)
 
-            df_final = pd.DataFrame(dic)
-            # dic['fall_rate'].append((current_price - min_price)/(max_price-min_price)*100)
+    df = pd.DataFrame(dic)
 
-    return df_final
+    df['min_date'] = pd.to_datetime(df['min_date'])
+    df['max_date'] = pd.to_datetime(df['max_date'])
+    df['min_year'] = df['min_date'].dt.year
+    df['min_month'] = df['min_date'].dt.month
+    df['max_year'] = df['max_date'].dt.year
+    df['max_month'] = df['max_date'].dt.month
+    df['fall_rate'] = (df['cur_price'] - df['min_price']) / (df['max_price'] - df['min_price']) * 100
+
+    return df
 
 def detect_minus_price(code):
     with sqlite3.connect('RSIStrategy.db') as con:
         cur = con.cursor()
-        sql = "select close from `{}` where close < 0".format(code)
+        sql = "select `index`, close from `{}` where close < 0".format(code)
         cur.execute(sql)
         result = cur.fetchone()
-
     if result == None:
         return None
     else:
-        return (code, result[0])
+        return result
 
 def get_all_stock_table_from_DB():
     with sqlite3.connect('RSIStrategy.db') as con:
@@ -84,9 +90,19 @@ def pick_stock_codes_in_opendart(code_list):
 
 if __name__ == '__main__':
 
-    df = get_all_stock_fall_rate_for_certain_period('20200101', '20220127')
-    print(df)
-    df.to_excel('a.xlsx')
+    # df = get_all_stock_fall_rate_for_certain_period('20200101', '20220127')
+    # print(df)
+    # df.to_excel('a.xlsx')
+
+    stock_list = get_all_stock_table_from_DB()
+
+    for code in tqdm(stock_list):
+        result = detect_minus_price(code)
+        if result == None:
+            continue
+        print(code)
+
+
 
 
 

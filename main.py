@@ -9,7 +9,7 @@ from tqdm import tqdm
 app = QApplication(sys.argv)
 
 rsi_strategy = RSIStrategy()
-rsi_strategy.start()
+rsi_strategy.kiwoom.update_all_stock_price('20220128')
 
 app.exec_()
 
