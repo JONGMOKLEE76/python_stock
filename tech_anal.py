@@ -94,14 +94,17 @@ if __name__ == '__main__':
     # print(df)
     # df.to_excel('a.xlsx')
 
-    stock_list = get_all_stock_table_from_DB()
+    # stock_list = get_all_stock_table_from_DB()
+    #
+    # for code in tqdm(stock_list):
+    #     result = detect_minus_price(code)
+    #     if result == None:
+    #         continue
+    #     print(code)
 
-    for code in tqdm(stock_list):
-        result = detect_minus_price(code)
-        if result == None:
-            continue
-        print(code)
-
+    with sqlite3.connect("stock.db") as con:
+        cur = con.cursor()
+        cur.execute("CREATE TABLE code_info (stock_code text, stock_name text, market text, updated text)")
 
 
 

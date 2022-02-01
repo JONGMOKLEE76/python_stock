@@ -37,15 +37,18 @@ def conv_stock_code_to_name(code):
         sql = "SELECT corp_name FROM opendart_company_list where stock_code = ?"
         cur.execute(sql, (code,))
         name = cur.fetchone()
-        return name[0]
+        if name == None:
+            return None
+    return name[0]
 
 def conv_stock_code_to_dartcode(code):
     with sqlite3.connect('RSIStrategy.db') as con:
-        df = pd.read_sql("SELECT * FROM opendart_company_list", con, index_col = None) # db에서 회사정보를 불러와 데이타프레임으로 만듬
-        if (df['stock_code'] == code).sum() != 0:
-            return df[df['stock_code'] == code].iloc[0, 0]
-        else:
-            return False
+        cur = con.cursor()
+        cur.execute("SELECT corp_code FROM opendart_company_list where stock_code = ?", (code,))
+        corp_code = cur.fetchone()
+        if corp_code == None:
+            return None
+    return corp_code[0]
 
 # OpenDart에서 회사코드로 주식의 총수를 구해서 Series로 반환하는 함수
 # reprt_code : 1분기보고서 : 11013 반기보고서 : 11012 3분기보고서 : 11014 사업보고서 : 11011
@@ -131,3 +134,6 @@ def get_company_financial_data_as_df(code, year, reprt_code):
     else:
         print(res.json()['message'])
         return ''
+
+if __name__ == '__main__':
+    conv_stock_code_to_name('005930')
