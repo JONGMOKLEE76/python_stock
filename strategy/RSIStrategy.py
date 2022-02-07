@@ -1,8 +1,6 @@
 import datetime
 import time
-
 import pandas as pd
-
 from api.Kiwoom import *
 from util.make_up_universe import *
 from util.db_helper import *

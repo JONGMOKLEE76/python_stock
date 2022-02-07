@@ -88,24 +88,16 @@ def pick_stock_codes_in_opendart(code_list):
             result_list.append(code)
     return result_list
 
+def delete_record_for_certain_date(code_list, date):
+    for code in tqdm(code_list):
+        with sqlite3.connect("RSIStrategy.db") as con:
+            cur = con.cursor()
+            sql = "DELETE FROM `{}` where `index` = ?".format(code)
+            cur.execute(sql, (date,))
+
 if __name__ == '__main__':
-
-    # df = get_all_stock_fall_rate_for_certain_period('20200101', '20220127')
-    # print(df)
-    # df.to_excel('a.xlsx')
-
-    # stock_list = get_all_stock_table_from_DB()
-    #
-    # for code in tqdm(stock_list):
-    #     result = detect_minus_price(code)
-    #     if result == None:
-    #         continue
-    #     print(code)
-
-    with sqlite3.connect("stock.db") as con:
-        cur = con.cursor()
-        cur.execute("CREATE TABLE code_info (stock_code text, stock_name text, market text, updated text)")
-
+    code_list = get_all_stock_table_from_DB()
+    delete_record_for_certain_date(code_list, '20220204')
 
 
 

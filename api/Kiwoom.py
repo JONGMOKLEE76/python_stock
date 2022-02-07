@@ -211,7 +211,6 @@ class Kiwoom(QAxWidget):
             close = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '종가')
             volume = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '거래량')
 
-            # self.tr_data = [date.strip(), int(open.strip().lstrip('+').lstrip('-')), int(high.strip().lstrip('+').lstrip('-')), int(low.strip().lstrip('+').lstrip('-')), int(close.strip().lstrip('+').lstrip('-')), int(volume)]
             self.tr_data = [date.strip(), open.strip().lstrip('+').lstrip('-'), high.strip().lstrip('+').lstrip('-'), low.strip().lstrip('+').lstrip('-'), close.strip().lstrip('+').lstrip('-'), volume.strip().lstrip('+').lstrip('-')]
 
         self.tr_event_loop.exit()
@@ -385,7 +384,7 @@ class Kiwoom(QAxWidget):
         stock_qty = self.dynamicCall("GetMasterListedStockCnt(QString)", code)
         return stock_qty
 
-    def get_today_price_data(self, code):
+    def get_today_price_data(self, code, date):
         self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10005_req", "opt10005", 0, "0001")
         self.tr_event_loop.exec_()
@@ -401,7 +400,7 @@ class Kiwoom(QAxWidget):
                 cur = execute_sql('RSIStrategy', sql)
                 last_date = cur.fetchone()
                 if last_date[0] != date:
-                    data = self.get_today_price_data(code)
+                    data = self.get_today_price_data(code, date)
                     if data[0] != '':
                         sql = "insert into `{}` values (?, ?, ?, ?, ?, ?)".format(code)
                         execute_sql('RSIStrategy', sql, data)

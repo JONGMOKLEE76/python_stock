@@ -3,7 +3,8 @@
 :init
 @echo Started: %date% %time%
 echo init starts
-cd C:\Users\JONGMIN\Desktop\python_stock
+cd C:\Users\heuser\PycharmProjects\python_stock
+call activate py38_32
 @taskkill /f /im "python.exe"
 set loop=0
 set max_loop=300
