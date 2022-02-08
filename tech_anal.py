@@ -94,10 +94,13 @@ def delete_record_for_certain_date(code_list, date):
             cur = con.cursor()
             sql = "DELETE FROM `{}` where `index` = ?".format(code)
             cur.execute(sql, (date,))
+            if cur.rowcount != 0: # 조건이 맞아 삭제한 행이 1개 이상이라면 아래 내용 출력
+                print('삭제한 코드는', code)
+                print('삭제한 행의 개수:', cur.rowcount)
 
 if __name__ == '__main__':
     code_list = get_all_stock_table_from_DB()
-    delete_record_for_certain_date(code_list, '20220204')
+    delete_record_for_certain_date(code_list, '20220208')
 
 
 

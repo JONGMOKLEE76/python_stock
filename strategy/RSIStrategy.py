@@ -23,6 +23,7 @@ class RSIStrategy(QThread):
         try:
             self.check_and_get_universe()
             self.check_and_get_price_data()
+            self.kiwoom.update_stock_code_db()
             self.kiwoom.get_order()
             self.kiwoom.get_balance()
             self.deposit = self.kiwoom.get_deposit()

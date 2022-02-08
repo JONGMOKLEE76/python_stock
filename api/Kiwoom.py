@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import time
 import pandas as pd
+from datetime import date
+import sqlite3
 from util.const import *
 from util.db_helper import *
 from tqdm import tqdm
@@ -64,7 +66,7 @@ class Kiwoom(QAxWidget):
         return code_name
 
     def _on_receive_tr_data(self, screen_no, rqname, trcode, record_name, next, unused1, unused2, unused3, unused4):
-        print("[Kiwoom] _on_receive_tr_data is called {} / {} / {}".format(screen_no, rqname, trcode))
+        # print("[Kiwoom] _on_receive_tr_data is called {} / {} / {}".format(screen_no, rqname, trcode))
         tr_data_cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
 
         if next == '2':
@@ -384,7 +386,7 @@ class Kiwoom(QAxWidget):
         stock_qty = self.dynamicCall("GetMasterListedStockCnt(QString)", code)
         return stock_qty
 
-    def get_today_price_data(self, code, date):
+    def get_today_price_data(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10005_req", "opt10005", 0, "0001")
         self.tr_event_loop.exec_()
@@ -394,13 +396,13 @@ class Kiwoom(QAxWidget):
         kospi_list = self.get_code_list_by_market(0)
         kosdaq_list = self.get_code_list_by_market(10)
 
-        for code in tqdm(kospi_list + kosdaq_list):
+        for code in tqdm(kospi_list+kosdaq_list):
             if check_table_exist('RSIStrategy', code):
                 sql = "select max(`index`) from `{}`".format(code)
                 cur = execute_sql('RSIStrategy', sql)
                 last_date = cur.fetchone()
                 if last_date[0] != date:
-                    data = self.get_today_price_data(code, date)
+                    data = self.get_today_price_data(code)
                     if data[0] != '':
                         sql = "insert into `{}` values (?, ?, ?, ?, ?, ?)".format(code)
                         execute_sql('RSIStrategy', sql, data)
@@ -409,3 +411,32 @@ class Kiwoom(QAxWidget):
                 continue
             price_df = self.get_price_data(code)
             insert_df_to_db('RSIStrategy', code, price_df)
+
+    def update_stock_code_db(self):
+        kospi_list = self.get_code_list_by_market(0)
+        today = date.today().strftime('%y%m%d')
+
+        for code in tqdm(kospi_list):
+            with sqlite3.connect("stock.db") as con:
+                cur = con.cursor()
+                sql = "SELECT stock_code FROM code_info where stock_code = ?"
+                cur.execute(sql, (code,))
+                if cur.fetchone() == None:
+                    sql = "INSERT INTO code_info VALUES (?, ?, ?, ?)"
+                    cur.execute(sql, (code, self.get_master_code_name(code), 'kospi', today,))
+
+        kosdaq_list = self.get_code_list_by_market(10)
+        today = date.today().strftime('%y%m%d')
+
+        for code in tqdm(kosdaq_list):
+            with sqlite3.connect("stock.db") as con:
+                cur = con.cursor()
+                sql = "SELECT stock_code FROM code_info where stock_code = ?"
+                cur.execute(sql, (code,))
+                if cur.fetchone() == None:
+                    sql = "INSERT INTO code_info VALUES (?, ?, ?, ?)"
+                    cur.execute(sql, (code, self.get_master_code_name(code), 'kosdaq', today,))
+
+    def get_stock_status(self, code):
+        status = self.dynamicCall("[GetMasterConstruction(QString)", code)
+        return status
