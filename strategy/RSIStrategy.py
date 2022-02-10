@@ -34,7 +34,7 @@ class RSIStrategy(QThread):
             send_message(traceback.format_exc(), RSI_STRATEGY_MESSAGE_TOKEN)
 
     def check_and_get_universe(self):
-        if not check_table_exist(self.strategy_name, 'universe'):
+        if check_transaction_closed() and not check_table_exist(self.strategy_name, 'universe'):
             universe_list = get_universe()
             # print(universe_list)
             universe = {}
@@ -71,7 +71,7 @@ class RSIStrategy(QThread):
         for idx, code in enumerate(self.universe.keys()):
             print("({}/{}) {}".format(idx+1, len(self.universe), code))
 
-            if check_transaction_closed() and not check_table_exist(self.strategy_name, code):
+            if not check_table_exist(self.strategy_name, code):
                 price_df = self.kiwoom.get_price_data(code)
                 insert_df_to_db(self.strategy_name, code, price_df)
             else:

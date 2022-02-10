@@ -1,3 +1,4 @@
+import sys
 from PyQt5.QAxContainer import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -66,7 +67,7 @@ class Kiwoom(QAxWidget):
         return code_name
 
     def _on_receive_tr_data(self, screen_no, rqname, trcode, record_name, next, unused1, unused2, unused3, unused4):
-        # print("[Kiwoom] _on_receive_tr_data is called {} / {} / {}".format(screen_no, rqname, trcode))
+        print("[Kiwoom] _on_receive_tr_data is called {} / {} / {}".format(screen_no, rqname, trcode))
         tr_data_cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
 
         if next == '2':
@@ -206,17 +207,17 @@ class Kiwoom(QAxWidget):
             self.tr_data = [name.strip(), accnting_month.strip(), capital.strip(), listed_qty.strip(), PER.strip(), EPS.strip(), ROE.strip(), PBR.strip(), sales_amt.strip(), sales_income.strip(), net_income.strip(), price.strip().lstrip('+').lstrip('-')]
 
         elif rqname == 'opt10005_req':
-            date = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '날짜')
-            open = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '시가')
-            high = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '고가')
-            low = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '저가')
-            close = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '종가')
-            volume = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 0, '거래량')
+            date = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 3, '날짜')
+            open = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 3, '시가')
+            high = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 3, '고가')
+            low = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 3, '저가')
+            close = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 3, '종가')
+            volume = self.dynamicCall("GetCommData(QString, QString, int, QString", trcode, rqname, 3, '거래량')
 
             self.tr_data = [date.strip(), open.strip().lstrip('+').lstrip('-'), high.strip().lstrip('+').lstrip('-'), low.strip().lstrip('+').lstrip('-'), close.strip().lstrip('+').lstrip('-'), volume.strip().lstrip('+').lstrip('-')]
 
         self.tr_event_loop.exit()
-        time.sleep(0.5)
+        time.sleep(0.3)
 
     def get_stock_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
@@ -382,8 +383,9 @@ class Kiwoom(QAxWidget):
                 "(최우선)매수호가":top_priority_bid,
                 "누적거래량":accum_volume
             })
+
     def get_stock_qty(self, code):
-        stock_qty = self.dynamicCall("GetMasterListedStockCnt(QString)", code)
+        stock_qty = self.dynamicCall("KOA_Functions(QString, QString)", "GetMasterListedStockCntEx", code)
         return stock_qty
 
     def get_today_price_data(self, code):

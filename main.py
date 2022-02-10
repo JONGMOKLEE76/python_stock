@@ -2,7 +2,6 @@ from datetime import date
 import sqlite3
 import numpy as np
 import pandas as pd
-
 from strategy.RSIStrategy import *
 import sys
 from util.notifier import *
@@ -16,10 +15,14 @@ from tqdm import tqdm
 # app.exec_()
 
 # 전체 주식의 오늘자 일봉데이타 UPDATE
-app = QApplication(sys.argv)
-kiwoom = Kiwoom()
-kiwoom.update_all_stock_price('20220208')
+# app = QApplication(sys.argv)
+# kiwoom = Kiwoom()
+# df = kiwoom.get_price_data('000060')
+# insert_df_to_db("RSIStrategy", '000060', df)
+# print('완료')
 
+# kiwoom.update_all_stock_price('20220209')
+# kiwoom.update_stock_code_db()
 # kospi_list = kiwoom.get_code_list_by_market(0)
 # kosdaq_list = kiwoom.get_code_list_by_market(10)
 # ELW_list = kiwoom.get_code_list_by_market(3)
@@ -69,7 +72,7 @@ kiwoom.update_all_stock_price('20220208')
 # pd.DataFrame(KONEX_dic).to_excel('KONEX.xlsx')
 # pd.DataFrame(mutual_dic).to_excel('mutual.xlsx')
 
-app.exec_()
+# app.exec_()
 
 
 
