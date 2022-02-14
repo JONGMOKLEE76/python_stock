@@ -71,7 +71,7 @@ class RSIStrategy(QThread):
         for idx, code in enumerate(self.universe.keys()):
             print("({}/{}) {}".format(idx+1, len(self.universe), code))
 
-            if not check_table_exist(self.strategy_name, code):
+            if check_transaction_closed() and not check_table_exist(self.strategy_name, code):
                 price_df = self.kiwoom.get_price_data(code)
                 insert_df_to_db(self.strategy_name, code, price_df)
             else:
